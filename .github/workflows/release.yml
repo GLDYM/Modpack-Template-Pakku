@@ -49,6 +49,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: "${{ steps.meta.outputs.release_tag }}"
+          name: "${{ steps.meta.outputs.pack_name }} ${{ steps.meta.outputs.pack_version }}"
           generate_release_notes: true
           files: |
             ${{ steps.meta.outputs.client_release_zip }}

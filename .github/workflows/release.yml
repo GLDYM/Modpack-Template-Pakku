@@ -21,7 +21,7 @@ jobs:
           ./.github/scripts/resolve-build-meta.sh
 
       - name: Setup JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5.2.0
         with:
           java-version: '21'
           distribution: 'temurin'
@@ -46,7 +46,7 @@ jobs:
           ./.github/scripts/prepare-release.sh "${{ steps.meta.outputs.release_tag }}"
 
       - name: Publish Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2.6.1
         with:
           tag_name: "${{ steps.meta.outputs.release_tag }}"
           name: "${{ steps.meta.outputs.pack_name }} ${{ steps.meta.outputs.pack_version }}"

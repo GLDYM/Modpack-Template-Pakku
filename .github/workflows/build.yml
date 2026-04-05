@@ -29,7 +29,7 @@ jobs:
 
       - name: json-validate
         id: json-validate
-        uses: GrantBirki/json-yaml-validate@v3.3.2
+        uses: GrantBirki/json-yaml-validate@v4.0.0
         with:
           comment: "true"
           base_dir: ".pakku"
@@ -88,7 +88,7 @@ jobs:
           ./.github/scripts/resolve-build-meta.sh
 
       - name: Setup JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5.2.0
         with:
           java-version: '21'
           distribution: 'temurin'
@@ -102,18 +102,18 @@ jobs:
           mv ./build/curseforge/*.zip "./${{ steps.meta.outputs.client_zip }}"
 
       - name: Delete existing release assets
-        uses: mknejp/delete-release-assets@v1
-        with:
-          fail-if-no-assets: false
-          tag: build
-          assets: |
-            ${{ steps.meta.outputs.client_zip }}
-            ${{ steps.meta.outputs.server_zip }}
-            ${{ steps.meta.outputs.full_server_zip }}
-          token: ${{ secrets.GITHUB_TOKEN }} # Required for authentication
+        run: |
+          for asset in \
+            "${{ steps.meta.outputs.client_zip }}" \
+            "${{ steps.meta.outputs.server_zip }}" \
+            "${{ steps.meta.outputs.full_server_zip }}"; do
+            gh release delete-asset build "$asset" -y >/dev/null 2>&1 || true
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload client file to release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2.6.1
         with:
           tag_name: "build"
           files: |
@@ -128,7 +128,7 @@ jobs:
           ./.github/scripts/package-server.sh "${{ steps.meta.outputs.server_zip }}" "${{ steps.meta.outputs.full_server_zip }}"
 
       - name: Upload server file to release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2.6.1
         with:
           tag_name: "build"
           files: |
@@ -151,7 +151,7 @@ jobs:
           ./.github/scripts/resolve-build-meta.sh
 
       - name: Setup JDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5.2.0
         with:
           java-version: '${{ steps.meta.outputs.java_version }}'
           distribution: 'temurin'

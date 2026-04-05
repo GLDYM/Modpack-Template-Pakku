@@ -46,14 +46,24 @@ jobs:
           ./.github/scripts/prepare-release.sh "${{ steps.meta.outputs.release_tag }}"
 
       - name: Publish Release
-        uses: softprops/action-gh-release@v2.6.1
-        with:
-          tag_name: "${{ steps.meta.outputs.release_tag }}"
-          name: "${{ steps.meta.outputs.pack_name }} ${{ steps.meta.outputs.pack_version }}"
-          generate_release_notes: true
-          files: |
-            ${{ steps.meta.outputs.client_release_zip }}
-            ${{ steps.meta.outputs.server_release_zip }}
-            ${{ steps.meta.outputs.full_server_release_zip }}
+        run: |
+          TAG="${{ steps.meta.outputs.release_tag }}"
+          TITLE="${{ steps.meta.outputs.pack_name }} ${{ steps.meta.outputs.pack_version }}"
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" --title "$TITLE"
+            gh release upload "$TAG" \
+              "${{ steps.meta.outputs.client_release_zip }}" \
+              "${{ steps.meta.outputs.server_release_zip }}" \
+              "${{ steps.meta.outputs.full_server_release_zip }}" \
+              --clobber
+          else
+            gh release create "$TAG" \
+              "${{ steps.meta.outputs.client_release_zip }}" \
+              "${{ steps.meta.outputs.server_release_zip }}" \
+              "${{ steps.meta.outputs.full_server_release_zip }}" \
+              --title "$TITLE" \
+              --generate-notes
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

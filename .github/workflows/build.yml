@@ -29,7 +29,7 @@ jobs:
 
       - name: json-validate
         id: json-validate
-        uses: GrantBirki/json-yaml-validate@v3.3.2 # replace with the latest version
+        uses: GrantBirki/json-yaml-validate@v3.3.2
         with:
           comment: "true"
           base_dir: ".pakku"
@@ -75,13 +75,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  build-release-and-test:
+  build-release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup JDK 21
+      - name: Resolve build metadata
+        id: meta
+        run: |
+          chmod +x ./.github/scripts/resolve-build-meta.sh
+          ./.github/scripts/resolve-build-meta.sh
+
+      - name: Setup JDK
         uses: actions/setup-java@v4
         with:
           java-version: '21'
@@ -89,11 +95,11 @@ jobs:
 
       - name: Build Client
         run: |
-          wget https://github.com/juraj-hrivnak/Pakku/releases/download/v1.3.2/pakku.jar >/dev/null 2>&1
+          wget "${{ steps.meta.outputs.pakku_url }}" -O pakku.jar >/dev/null 2>&1
           chmod 755 pakku.jar
           java -jar pakku.jar export
 
-          mv ./build/curseforge/*.zip ./TskimiCupolaCraft-build.zip
+          mv ./build/curseforge/*.zip "./${{ steps.meta.outputs.client_zip }}"
 
       - name: Delete existing release assets
         uses: mknejp/delete-release-assets@v1
@@ -101,9 +107,9 @@ jobs:
           fail-if-no-assets: false
           tag: build
           assets: |
-            TskimiCupolaCraft-build.zip
-            Server-TskimiCupolaCraft-build.zip
-            Full-Server-TskimiCupolaCraft-build.zip
+            ${{ steps.meta.outputs.client_zip }}
+            ${{ steps.meta.outputs.server_zip }}
+            ${{ steps.meta.outputs.full_server_zip }}
           token: ${{ secrets.GITHUB_TOKEN }} # Required for authentication
 
       - name: Upload client file to release
@@ -111,82 +117,51 @@ jobs:
         with:
           tag_name: "build"
           files: |
-            TskimiCupolaCraft-build.zip
+            ${{ steps.meta.outputs.client_zip }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build server
+      - name: Build and package server
         run: |
-          cp installer/install-server.sh ./install-server.sh 
-          chmod +x install-server.sh
-          ./install-server.sh
-          zip -r "./Full-Server-TskimiCupolaCraft-build.zip" ./server/*
-
-      - name: Package server files
-        run: |
-          cp pakku.json installer/
-          cp pakku-lock.json installer/
-          cp pakku.jar installer/
-          cp -r MCDR/ installer/
-          cp -r .pakku/ installer/
-          wget https://maven.neoforged.net/releases/net/neoforged/neoforge/21.1.219/neoforge-21.1.219-installer.jar
-          cp neoforge-21.1.219-installer.jar installer/
-          rm -rf installer/.pakku/client-overrides/*
-          
-          shopt -s dotglob
-          zip -r "./Server-TskimiCupolaCraft-build.zip" ./installer
-          shopt -u dotglob
+          chmod +x ./installer/install-server.sh
+          chmod +x ./.github/scripts/package-server.sh
+          ./.github/scripts/package-server.sh "${{ steps.meta.outputs.server_zip }}" "${{ steps.meta.outputs.full_server_zip }}"
 
       - name: Upload server file to release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: "build"
           files: |
-            Server-TskimiCupolaCraft-build.zip 
-            Full-Server-TskimiCupolaCraft-build.zip
+            ${{ steps.meta.outputs.server_zip }}
+            ${{ steps.meta.outputs.full_server_zip }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+  server-startup-test:
+    runs-on: ubuntu-latest
+    needs: build-release
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Resolve build metadata
+        id: meta
+        run: |
+          chmod +x ./.github/scripts/resolve-build-meta.sh
+          ./.github/scripts/resolve-build-meta.sh
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '${{ steps.meta.outputs.java_version }}'
+          distribution: 'temurin'
+
+      - name: Build server for test
+        run: |
+          chmod +x ./installer/install-server.sh
+          ./installer/install-server.sh
+
       - name: Run Minecraft server and validate startup
         run: |
-          cd server 
-          chmod +x run.sh
-
-          ./run.sh > server.log 2>&1 &
-          SERVER_PID=$!
-
-          echo "Test Server started with PID $SERVER_PID"
-
-          for i in {1..30}; do
-            if grep -q 'Done ([0-9.]\+s)! For help, type "help"' server.log; then
-              echo "Server started successfully, running for additional 5 minutes to check stability."
-              sleep 300
-              if ! kill -0 $SERVER_PID 2>/dev/null; then
-                echo "Server process crashed"
-                break
-              fi
-              echo "Server started successfully"
-              echo "Show log:"
-              cat logs/latest.log
-              exit 0
-            fi
-            if ! kill -0 $SERVER_PID 2>/dev/null; then
-              echo "Server process crashed"
-              break
-            fi
-            sleep 10
-          done
-
-          echo "Server did not start successfully within timeout or crashed"
-          echo "Show log:"
-          cat logs/kubejs/startup.log
-          cat logs/latest.log
-
-          if ls crash-reports/*.txt 1> /dev/null 2>&1; then
-            echo "Crash reports found:"
-            cat crash-reports/*.txt
-          else
-            echo "No crash reports found."
-            cat logs/latest.log
-          fi
-          exit 1
+          chmod +x ./.github/scripts/test-server.sh
+          ./.github/scripts/test-server.sh

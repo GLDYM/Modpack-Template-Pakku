@@ -20,7 +20,7 @@ body:
         - label: I searched existing issues and did not find a duplicate report.
           required: true
         - label: I can provide logs and clear reproduction steps.
-          required: true
+          required: false
         - label: I understand that a tested fix or PR greatly increases the chance of this being resolved.
           required: false
   - type: textarea
@@ -33,8 +33,8 @@ body:
   - type: input
     id: logs
     attributes:
-      label: latest.log
-      description: Submit your 'latest.log' file to  https://gist.github.com/ , http://pastebin.com/ or https://mclo.gs/, then paste the link here
+      label: latest.log / debug.log Link
+      description: Submit your 'latest.log' or 'debug.log' file to  https://gist.github.com/ , http://pastebin.com/ or https://mclo.gs/, then paste the link here
     validations:
       required: false
   - type: textarea

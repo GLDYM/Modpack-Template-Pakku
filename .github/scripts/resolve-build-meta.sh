@@ -65,12 +65,30 @@ RELEASE_TAG="v${PACK_VERSION}"
 CLIENT_RELEASE_ZIP="${PACK_NAME_SLUG}-${PACK_VERSION}.zip"
 SERVER_RELEASE_ZIP="Server-${PACK_NAME_SLUG}-${PACK_VERSION}.zip"
 FULL_SERVER_RELEASE_ZIP="Full-Server-${PACK_NAME_SLUG}-${PACK_VERSION}.zip"
-CHANGELOG_FILE="CHANGELOG-${PACK_VERSION}.md"
+# CHANGELOG_FILE="CHANGELOG-${PACK_VERSION}.md"
 
 if [[ -z "${GITHUB_OUTPUT:-}" ]]; then
   echo "GITHUB_OUTPUT is not set"
   exit 1
 fi
+
+echo "pack_name=$PACK_NAME"
+echo "pack_version=$PACK_VERSION"
+echo "pack_name_slug=$PACK_NAME_SLUG"
+
+echo "pakku_url=$PAKKU_URL"
+echo "mc_version=$MC_VERSION"
+echo "java_version=$JAVA_VERSION"
+
+echo "client_zip=$CLIENT_ZIP"
+echo "server_zip=$SERVER_ZIP"
+echo "full_server_zip=$FULL_SERVER_ZIP"
+
+echo "release_tag=$RELEASE_TAG"
+echo "client_release_zip=$CLIENT_RELEASE_ZIP"
+echo "server_release_zip=$SERVER_RELEASE_ZIP"
+echo "full_server_release_zip=$FULL_SERVER_RELEASE_ZIP"
+# echo "changelog_file=$CHANGELOG_FILE"
 
 {
   echo "pack_name=$PACK_NAME"
@@ -86,5 +104,5 @@ fi
   echo "client_release_zip=$CLIENT_RELEASE_ZIP"
   echo "server_release_zip=$SERVER_RELEASE_ZIP"
   echo "full_server_release_zip=$FULL_SERVER_RELEASE_ZIP"
-  echo "changelog_file=$CHANGELOG_FILE"
+  # echo "changelog_file=$CHANGELOG_FILE"
 } >> "$GITHUB_OUTPUT"

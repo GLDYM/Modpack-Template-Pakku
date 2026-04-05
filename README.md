@@ -1,0 +1,31 @@
+# Modpack Template - Pakku
+
+A Minecraft Modpack Template based on [Pakku](https://github.com/juraj-hrivnak/Pakku), providing CI/CD of modpack.
+
+## Feature
+
+- Auto build client-pack & server-pack
+- Auto test server-pack
+- Auto validate json & toml files
+- Provide lightweight server-pack by distributing the source
+
+## Usage
+
+### Pakku
+
+See [https://juraj-hrivnak.github.io/Pakku/home.html](https://juraj-hrivnak.github.io/Pakku/home.html).
+
+### Github Action
+
+- The github action will be triggered when changing the content of modpack, including `pakku.json`, `pakku-lock.json` or `.pakku/`.
+- The action will validate json & toml files in `.pakku/`, you can configure in `exclude.txt` to exclude some files.
+- Then build client-pack , server-pack & full server-pack, release them under `build` tag.
+- Finally start up server-pack to test.
+
+## License
+
+MIT License
+
+## Special Thanks
+
+- [Pakku](https://github.com/juraj-hrivnak/Pakku)

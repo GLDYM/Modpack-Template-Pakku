@@ -1,0 +1,30 @@
+name: Feature Request
+description: If you have an idea for a new feature, please suggest it here. Theoretically, this will make the modpack's suggestion page more colorful and engaging.
+title: "[Feature] "
+labels: ["Feature Request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Before submitting a feature request, please ensure the following:**
+        - [ ] The modpack is at its latest version
+        - [ ] Existing issues have been searched, and no similar requests exist
+        - [ ] The modpack does not already have a similar feature, or the implementation does not align with the modpack's concept
+        - [ ] Providing code implementation for the design will increase the chances of it being implemented
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Suggested Feature
+      description: Provide a brief overview of the feature you'd like to see and the reasoning behind it
+      placeholder: For example: Add a visual indicator for the simulated launcher's item launch
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed_fix
+    attributes:
+      label: Proposed Implementation
+      description: If you have a proposed implementation and have tested it, please provide the code here
+      render: js
+    validations:
+      required: false

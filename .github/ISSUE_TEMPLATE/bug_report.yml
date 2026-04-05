@@ -1,0 +1,35 @@
+name: Bug Report
+description: If you found a bug , please report it here
+title: "[Bug] "
+labels: [ Bug ]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Before reporting a bug, please ensure the following:**
+        - [ ] The modpack is at its latest version
+        - [ ] Testing was done in the original game environment
+        - [ ] There are no similar issues in previous bug reports
+        - [ ] You are aware that the author likely won't address bug reports, but providing a tested fix will increase the chances of it being resolved
+  - type: textarea
+    id: description
+    attributes:
+      label: Detailed Bug Report
+      description: Describe the bug in detail, including what you expected to happen and how to reproduce it. You can also attach images or files if necessary.
+    validations:
+      required: true
+  - type: input
+    id: logs
+    attributes:
+      label: latest.log
+      description: Submit your 'latest.log' file to  https://gist.github.com/ , http://pastebin.com/ or https://mclo.gs/, then paste the link here
+    validations:
+      required: false
+  - type: textarea
+    id: proposed_fix
+    attributes:
+      label: Proposed Fix
+      description: If you have identified the issue, please provide the fixed code here
+      render: js
+    validations:
+      required: false

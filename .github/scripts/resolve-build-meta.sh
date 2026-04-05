@@ -6,6 +6,11 @@ if [[ -z "$PACK_NAME" ]]; then
   PACK_NAME="modpack"
 fi
 
+PACK_VERSION="$(sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' pakku.json | head -n 1)"
+if [[ -z "$PACK_VERSION" ]]; then
+  PACK_VERSION="0.0.0"
+fi
+
 PACK_NAME_SLUG="$(echo "$PACK_NAME" | sed 's/[[:space:]]//g; s/[^A-Za-z0-9._-]/-/g; s/-\{2,\}/-/g; s/^-//; s/-$//')"
 if [[ -z "$PACK_NAME_SLUG" ]]; then
   PACK_NAME_SLUG="modpack"
@@ -53,6 +58,11 @@ fi
 CLIENT_ZIP="${PACK_NAME_SLUG}-build.zip"
 SERVER_ZIP="Server-${PACK_NAME_SLUG}-build.zip"
 FULL_SERVER_ZIP="Full-Server-${PACK_NAME_SLUG}-build.zip"
+RELEASE_TAG="v${PACK_VERSION}"
+CLIENT_RELEASE_ZIP="${PACK_NAME_SLUG}-${PACK_VERSION}.zip"
+SERVER_RELEASE_ZIP="Server-${PACK_NAME_SLUG}-${PACK_VERSION}.zip"
+FULL_SERVER_RELEASE_ZIP="Full-Server-${PACK_NAME_SLUG}-${PACK_VERSION}.zip"
+CHANGELOG_FILE="CHANGELOG-${PACK_VERSION}.md"
 
 if [[ -z "${GITHUB_OUTPUT:-}" ]]; then
   echo "GITHUB_OUTPUT is not set"
@@ -61,6 +71,7 @@ fi
 
 {
   echo "pack_name=$PACK_NAME"
+  echo "pack_version=$PACK_VERSION"
   echo "pack_name_slug=$PACK_NAME_SLUG"
   echo "pakku_url=$PAKKU_URL"
   echo "mc_version=$MC_VERSION"
@@ -68,4 +79,9 @@ fi
   echo "client_zip=$CLIENT_ZIP"
   echo "server_zip=$SERVER_ZIP"
   echo "full_server_zip=$FULL_SERVER_ZIP"
+  echo "release_tag=$RELEASE_TAG"
+  echo "client_release_zip=$CLIENT_RELEASE_ZIP"
+  echo "server_release_zip=$SERVER_RELEASE_ZIP"
+  echo "full_server_release_zip=$FULL_SERVER_RELEASE_ZIP"
+  echo "changelog_file=$CHANGELOG_FILE"
 } >> "$GITHUB_OUTPUT"

@@ -1,4 +1,4 @@
-name: Auto Validate, Build, Release & Test
+name: Auto Validate, Build & Test
 
 on:
   workflow_dispatch:

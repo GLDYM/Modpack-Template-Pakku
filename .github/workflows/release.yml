@@ -1,0 +1,58 @@
+name: Release Package
+
+on:
+  workflow_dispatch:
+    ~
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Resolve release metadata
+        id: meta
+        run: |
+          chmod +x ./.github/scripts/resolve-build-meta.sh
+          ./.github/scripts/resolve-build-meta.sh
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Build Client Package
+        run: |
+          wget "${{ steps.meta.outputs.pakku_url }}" -O pakku.jar >/dev/null 2>&1
+          chmod 755 pakku.jar
+          java -jar pakku.jar export
+
+          mv ./build/curseforge/*.zip "./${{ steps.meta.outputs.client_release_zip }}"
+
+      - name: Build and Package Server
+        run: |
+          chmod +x ./installer/install-server.sh
+          chmod +x ./.github/scripts/package-server.sh
+          ./.github/scripts/package-server.sh "${{ steps.meta.outputs.server_release_zip }}" "${{ steps.meta.outputs.full_server_release_zip }}"
+
+      - name: Prepare Release Tag
+        run: |
+          chmod +x ./.github/scripts/prepare-release.sh
+          ./.github/scripts/prepare-release.sh "${{ steps.meta.outputs.release_tag }}"
+
+      - name: Publish Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: "${{ steps.meta.outputs.release_tag }}"
+          generate_release_notes: true
+          files: |
+            ${{ steps.meta.outputs.client_release_zip }}
+            ${{ steps.meta.outputs.server_release_zip }}
+            ${{ steps.meta.outputs.full_server_release_zip }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -42,14 +42,17 @@ else
   echo "logs/kubejs/startup.log not found"
 fi
 
-cat logs/latest.log || true
+if [[ -f logs/latest.log ]]; then
+  cat logs/latest.log
+else
+  echo "logs/latest.log not found"
+fi
 
 if ls crash-reports/*.txt 1> /dev/null 2>&1; then
   echo "Crash reports found:"
   cat crash-reports/*.txt
 else
   echo "No crash reports found."
-  cat logs/latest.log || true
 fi
 
 exit 1

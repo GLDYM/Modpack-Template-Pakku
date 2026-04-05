@@ -21,7 +21,8 @@ if [[ -z "$PAKKU_URL" ]]; then
   PAKKU_URL="https://github.com/juraj-hrivnak/Pakku/releases/download/v1.3.2/pakku.jar"
 fi
 
-MC_VERSION="$(sed -n 's/.*"mc_versions"[[:space:]]*:[[:space:]]*\[[[:space:]]*"\([^"]*\)".*/\1/p' pakku-lock.json | head -n 1)"
+lock_json="$(tr -d '\r\n' < pakku-lock.json)"
+MC_VERSION="$(echo "$lock_json" | sed -n 's/.*"mc_versions"[[:space:]]*:[[:space:]]*\[[[:space:]]*"\([^"]*\)".*/\1/p')"
 if [[ -z "$MC_VERSION" ]]; then
   MC_VERSION="1.20.1"
 fi
@@ -38,10 +39,10 @@ if [[ -z "$mc_patch" ]]; then
   mc_patch="0"
 fi
 
+# Legacy naming: 1.x.y
+# Modern naming: x.y.z (major starts from 26)
 JAVA_VERSION="21"
-if (( mc_major >= 26 )); then
-  JAVA_VERSION="25"
-else
+if (( mc_major == 1 )); then
   if (( mc_minor >= 21 )); then
     JAVA_VERSION="21"
   elif (( mc_minor == 20 && mc_patch >= 5 )); then
@@ -53,6 +54,8 @@ else
   else
     JAVA_VERSION="8"
   fi
+elif (( mc_major >= 26 )); then
+  JAVA_VERSION="25"
 fi
 
 CLIENT_ZIP="${PACK_NAME_SLUG}-build.zip"

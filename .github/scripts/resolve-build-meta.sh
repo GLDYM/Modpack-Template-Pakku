@@ -6,7 +6,7 @@ if [[ -z "$PACK_NAME" ]]; then
   PACK_NAME="modpack"
 fi
 
-PACK_NAME_SLUG="$(echo "$PACK_NAME" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9._-]/-/g; s/-\{2,\}/-/g; s/^-//; s/-$//')"
+PACK_NAME_SLUG="$(echo "$PACK_NAME" | sed 's/[[:space:]]//g; s/[^A-Za-z0-9._-]/-/g; s/-\{2,\}/-/g; s/^-//; s/-$//')"
 if [[ -z "$PACK_NAME_SLUG" ]]; then
   PACK_NAME_SLUG="modpack"
 fi

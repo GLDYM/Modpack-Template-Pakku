@@ -9,6 +9,8 @@ SERVER_PID=$!
 
 echo "Test Server started with PID $SERVER_PID"
 
+# If a server doesn't start within 5 minutes, we assumed it failed to start and exit with error.
+# For Github Actions' powerful machines, over 5 minutes is not acceptable.
 for i in {1..30}; do
   if grep -q 'Done ([0-9.]\+s)! For help, type "help"' server.log; then
     echo "Server started successfully, running for additional 5 minutes to check stability."

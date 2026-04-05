@@ -44,7 +44,7 @@ jobs:
       - name: Check if tag exists
         id: check_tag
         run: |
-          if git rev-parse -q --verify "refs/tags/build" >/dev/null; then
+          if git ls-remote --exit-code --tags origin "refs/tags/build" >/dev/null 2>&1; then
             echo "exists=true" >> $GITHUB_OUTPUT
           else
             echo "exists=false" >> $GITHUB_OUTPUT

@@ -1,6 +1,14 @@
+<div align="center">
+
 # Modpack Template - Pakku
 
 A Minecraft Modpack Template based on [Pakku](https://github.com/juraj-hrivnak/Pakku), providing CI/CD of modpack.
+
+[English](README.md) / [简体中文](README_ZH.md)
+
+![Counter](https://count.getloli.com/@MPT-P?name=MPT-P&theme=miku&padding=7&offset=0&align=top&scale=1&pixelated=1&darkmode=auto)
+
+</div>
 
 ## Feature
 
@@ -18,7 +26,7 @@ See [https://juraj-hrivnak.github.io/Pakku/home.html](https://juraj-hrivnak.gith
 
 ### Github Action
 
-#### Auto build
+#### Auto build & test
 
 - The github action will be triggered when changing the content of modpack, including `pakku.json`, `pakku-lock.json` or `.pakku/`.
 - The action will validate json & toml files in `.pakku/`, you can configure in `exclude.txt` to exclude some files.
@@ -29,7 +37,7 @@ See [https://juraj-hrivnak.github.io/Pakku/home.html](https://juraj-hrivnak.gith
 
 - You need to manually trigger the release script in Github Action Page.
 - The action will parse the version of modpack and create a new release.
-- If you want to auto publish your modpack to platforms like Curseforge or Modrinth, refer [Kir-Antipov/mc-publish](https://github.com/marketplace/actions/mc-publish) to change the release script.
+- If you want to auto publish your modpack to platforms like Curseforge or Modrinth, refer [Kir-Antipov/mc-publish](https://github.com/marketplace/actions/mc-publish) to change [the release script](.github/workflows/build.yml).
 
 ## License
 
@@ -39,3 +47,4 @@ MIT License
 
 - [Pakku](https://github.com/juraj-hrivnak/Pakku)
 - [PortableMC](https://github.com/theorzr/portablemc)
+- [CTNH](https://github.com/CTNH-Team/Create-New-Horizon)

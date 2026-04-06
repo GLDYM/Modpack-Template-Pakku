@@ -1,0 +1,2 @@
+.pakku/overrides/config/ftbbackups2.json
+.pakku/overrides/config/lithostitched.json

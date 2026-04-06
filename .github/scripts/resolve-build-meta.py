@@ -100,12 +100,28 @@ def main() -> int:
     mc_version = str(mc_versions[0]) if mc_versions else "1.20.1"
     java_version = resolve_java_version(mc_version)
 
+    client_zip = f"{pack_name_slug}-build.zip"
+    server_zip = f"Server-{pack_name_slug}-build.zip"
+    full_server_zip = f"Full-Server-{pack_name_slug}-build.zip"
+
+    release_tag = f"v{pack_version}"
+    client_release_zip = f"{pack_name_slug}-{pack_version}.zip"
+    server_release_zip = f"Server-{pack_name_slug}-{pack_version}.zip"
+    full_server_release_zip = f"Full-Server-{pack_name_slug}-{pack_version}.zip"
+
     print(f"pack_name={pack_name}")
     print(f"pack_version={pack_version}")
     print(f"pack_name_slug={pack_name_slug}")
     print(f"pakku_url={pakku_url}")
     print(f"mc_version={mc_version}")
     print(f"java_version={java_version}")
+    print(f"client_zip={client_zip}")
+    print(f"server_zip={server_zip}")
+    print(f"full_server_zip={full_server_zip}")
+    print(f"release_tag={release_tag}")
+    print(f"client_release_zip={client_release_zip}")
+    print(f"server_release_zip={server_release_zip}")
+    print(f"full_server_release_zip={full_server_release_zip}")
     return 0
 
 

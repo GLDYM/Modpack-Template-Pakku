@@ -61,6 +61,10 @@ def resolve_java_version(mc_version: str) -> str:
     return java_version
 
 
+def log(message: str) -> None:
+    print(f"[resolve-build-meta] {message}", file=sys.stderr)
+
+
 def main() -> int:
     if len(sys.argv) != 4:
         print("Usage: resolve-build-meta.py <pakku.json> <pakku-lock.json> <install-config.properties>")
@@ -69,6 +73,10 @@ def main() -> int:
     pakku_path = pathlib.Path(sys.argv[1])
     lock_path = pathlib.Path(sys.argv[2])
     install_config_path = pathlib.Path(sys.argv[3])
+
+    log(f"Input pakku path: {pakku_path}")
+    log(f"Input lock path: {lock_path}")
+    log(f"Input config path: {install_config_path}")
 
     if not pakku_path.is_file():
         print(f"pakku.json not found: {pakku_path}", file=sys.stderr)
@@ -87,6 +95,8 @@ def main() -> int:
     lock = json.loads(lock_path.read_text(encoding="utf-8"))
     install_cfg = load_key_value_properties(install_config_path)
 
+    log("Loaded input files successfully")
+
     pack_name = str(pakku.get("name") or "modpack")
     pack_version = str(pakku.get("version") or "0.0.0")
     pack_name_slug = slugify(pack_name)
@@ -100,6 +110,12 @@ def main() -> int:
     mc_version = str(mc_versions[0]) if mc_versions else "1.20.1"
     java_version = resolve_java_version(mc_version)
 
+    log(
+        "Derived core values: "
+        f"pack_name={pack_name}, pack_version={pack_version}, pack_name_slug={pack_name_slug}, "
+        f"mc_version={mc_version}, java_version={java_version}"
+    )
+
     client_zip = f"{pack_name_slug}-build.zip"
     server_zip = f"Server-{pack_name_slug}-build.zip"
     full_server_zip = f"Full-Server-{pack_name_slug}-build.zip"
@@ -108,6 +124,29 @@ def main() -> int:
     client_release_zip = f"{pack_name_slug}-{pack_version}.zip"
     server_release_zip = f"Server-{pack_name_slug}-{pack_version}.zip"
     full_server_release_zip = f"Full-Server-{pack_name_slug}-{pack_version}.zip"
+
+    required_values = {
+        "pack_name": pack_name,
+        "pack_version": pack_version,
+        "pack_name_slug": pack_name_slug,
+        "pakku_url": pakku_url,
+        "mc_version": mc_version,
+        "java_version": java_version,
+        "client_zip": client_zip,
+        "server_zip": server_zip,
+        "full_server_zip": full_server_zip,
+        "release_tag": release_tag,
+        "client_release_zip": client_release_zip,
+        "server_release_zip": server_release_zip,
+        "full_server_release_zip": full_server_release_zip,
+    }
+
+    missing = [k for k, v in required_values.items() if not str(v).strip()]
+    if missing:
+        log(f"Missing required output values: {', '.join(missing)}")
+        return 1
+
+    log("All required output values are present")
 
     print(f"pack_name={pack_name}")
     print(f"pack_version={pack_version}")

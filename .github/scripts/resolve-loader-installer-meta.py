@@ -4,6 +4,10 @@ import pathlib
 import sys
 
 
+def log(message: str) -> None:
+    print(f"[resolve-loader-installer-meta] {message}", file=sys.stderr)
+
+
 def load_key_value_properties(path: pathlib.Path) -> dict[str, str]:
     data: dict[str, str] = {}
     for raw in path.read_text(encoding="utf-8").splitlines():
@@ -25,6 +29,9 @@ def main() -> int:
     lock_path = pathlib.Path(sys.argv[1])
     install_config_path = pathlib.Path(sys.argv[2])
 
+    log(f"Input lock path: {lock_path}")
+    log(f"Input config path: {install_config_path}")
+
     if not lock_path.is_file():
         print(f"pakku-lock.json not found: {lock_path}", file=sys.stderr)
         return 1
@@ -37,6 +44,8 @@ def main() -> int:
 
     lock = json.loads(lock_path.read_text(encoding="utf-8"))
     cfg = load_key_value_properties(install_config_path)
+
+    log("Loaded lockfile and install config successfully")
 
     mc_versions = lock.get("mc_versions") or []
     mc_version = str(mc_versions[0]) if mc_versions else ""
@@ -69,6 +78,25 @@ def main() -> int:
     else:
         print("Unsupported loader in pakku-lock.json", file=sys.stderr)
         return 1
+
+    required_values = {
+        "mc_version": mc_version,
+        "loader_name": loader_name,
+        "loader_version": loader_version,
+        "installer_file_name": installer_file_name,
+        "installer_url": installer_url,
+    }
+
+    missing = [k for k, v in required_values.items() if not str(v).strip()]
+    if missing:
+        log(f"Missing required output values: {', '.join(missing)}")
+        return 1
+
+    log(
+        "Resolved values: "
+        f"loader_name={loader_name}, loader_version={loader_version}, "
+        f"mc_version={mc_version}, installer_file_name={installer_file_name}"
+    )
 
     print(f"mc_version={mc_version}")
     print(f"loader_name={loader_name}")

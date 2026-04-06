@@ -4,7 +4,7 @@ set -euo pipefail
 SERVER_DIR="${SERVER_DIR:-server}"
 CLIENT_DIR="${CLIENT_DIR:-client}"
 LOCKFILE_PATH="${LOCKFILE_PATH:-pakku-lock.json}"
-USERNAME="${CLIENT_USERNAME:-CIPlayer}"
+USERNAME="${CLIENT_USERNAME:-Dev}"
 SERVER_HOST="${SERVER_HOST:-localhost}"
 SERVER_PORT="${SERVER_PORT:-25565}"
 
@@ -28,8 +28,8 @@ if [[ -z "${DISPLAY:-}" ]]; then
   exit 1
 fi
 
-mkdir -p "$CLIENT_DIR/profile"
-cat > "$CLIENT_DIR/profile/options.txt" <<EOF
+mkdir -p "$CLIENT_DIR/.minecraft"
+cat > "$CLIENT_DIR/.minecraft/options.txt" <<EOF
 skipMultiplayerWarning:true
 onboardAccessibility:false
 joinedFirstServer:true
@@ -56,7 +56,7 @@ selected_target=""
 for target in "${TARGETS[@]}"; do
   echo "Checking launch target: $target"
   dry_log_file="$(mktemp)"
-  if portablemc --main-dir "$CLIENT_DIR/.minecraft" start "$target" --work-dir "$CLIENT_DIR/profile" -u "$USERNAME" --dry > /dev/null 2> "$dry_log_file"; then
+  if portablemc --main-dir "$CLIENT_DIR/.minecraft" start "$target" -u "$USERNAME" --dry > /dev/null 2> "$dry_log_file"; then
     selected_target="$target"
     rm -f "$dry_log_file"
     break
@@ -115,8 +115,8 @@ portablemc \
   --main-dir "$CLIENT_DIR/.minecraft" \
   start "$selected_target" \
   -u "$USERNAME" \
-  -s "$SERVER_HOST" \
-  -p "$SERVER_PORT" > "$CLIENT_DIR/client.log" 2>&1 &
+  --join-server "$SERVER_HOST" \
+  --join-server-port "$SERVER_PORT" > "$CLIENT_DIR/client.log" 2>&1 &
 CLIENT_PID=$!
 
 echo "Started client with PID $CLIENT_PID"

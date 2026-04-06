@@ -30,14 +30,14 @@ download_file() {
 }
 
 rm -rf "$CLIENT_DIR"
-mkdir -p "$CLIENT_DIR/profile/mods"
+mkdir -p "$CLIENT_DIR/.minecraft/mods"
 
-echo "Merging overrides into $CLIENT_DIR/profile"
+echo "Merging overrides into $CLIENT_DIR/.minecraft"
 if [[ -d "$PAKKU_DIR/overrides" ]]; then
-  cp -a "$PAKKU_DIR/overrides/." "$CLIENT_DIR/profile/"
+  cp -a "$PAKKU_DIR/overrides/." "$CLIENT_DIR/.minecraft/"
 fi
 if [[ -d "$PAKKU_DIR/client-overrides" ]]; then
-  cp -a "$PAKKU_DIR/client-overrides/." "$CLIENT_DIR/profile/"
+  cp -a "$PAKKU_DIR/client-overrides/." "$CLIENT_DIR/.minecraft/"
 fi
 
 tmp_list="$(mktemp)"
@@ -47,7 +47,7 @@ python3 ./.github/scripts/resolve-client-mod-downloads.py "$LOCKFILE_PATH" "$tmp
 download_count=0
 while IFS=$'\t' read -r url file_name sha1; do
   [[ -z "${url:-}" ]] && continue
-  target="$CLIENT_DIR/profile/mods/$file_name"
+  target="$CLIENT_DIR/.minecraft/mods/$file_name"
 
   echo "Downloading $file_name"
   download_file "$url" "$target"
@@ -66,4 +66,4 @@ while IFS=$'\t' read -r url file_name sha1; do
 done < "$tmp_list"
 
 rm -f "$tmp_list"
-echo "Prepared client profile with $download_count downloaded mods"
+echo "Prepared client .minecraft with $download_count downloaded mods"

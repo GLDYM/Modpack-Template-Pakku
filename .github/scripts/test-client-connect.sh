@@ -114,7 +114,6 @@ popd >/dev/null
 portablemc \
   --main-dir "$CLIENT_DIR/.minecraft" \
   start "$selected_target" \
-  --work-dir "$CLIENT_DIR/profile" \
   -u "$USERNAME" \
   -s "$SERVER_HOST" \
   -p "$SERVER_PORT" > "$CLIENT_DIR/client.log" 2>&1 &

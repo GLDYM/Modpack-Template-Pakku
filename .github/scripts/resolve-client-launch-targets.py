@@ -39,52 +39,23 @@ def main() -> int:
 
     if "neoforge" in loaders:
         loader_ver = str(loaders["neoforge"]).strip()
-        candidates = [
-            # Common forms used by different portablemc releases.
+        targets = unique_preserve_order([
+            f"neoforge::{loader_ver}",
             f"neoforge:{mc_version}",
-            f"neoforge:{loader_ver}",
-            f"neoforge:{mc_version}:{loader_ver}",
-            "neoforge",
-        ]
-
-        # Some lockfiles include prerelease suffixes that launcher resolvers may not accept.
-        loader_no_suffix = loader_ver.split("-", 1)[0]
-        if loader_no_suffix != loader_ver:
-            candidates.extend(
-                [
-                    f"neoforge:{loader_no_suffix}",
-                    f"neoforge:{mc_version}:{loader_no_suffix}",
-                ]
-            )
-
-        # If loader version starts with MC version, also try "mc:loaderPart" patterns.
-        # Example: mc=26.1.1, loader=26.1.1.6-beta -> loader_part=6-beta.
-        prefix = f"{mc_version}."
-        if loader_ver.startswith(prefix):
-            loader_part = loader_ver[len(prefix):]
-            loader_part_no_suffix = loader_part.split("-", 1)[0]
-            candidates.extend(
-                [
-                    f"neoforge:{mc_version}:{loader_part}",
-                    f"neoforge:{mc_version}:{loader_part_no_suffix}",
-                    f"neoforge:{mc_version}-{loader_part}",
-                ]
-            )
-
-        targets = unique_preserve_order(candidates)
+            f"neoforge:{mc_version}:unstable",          
+        ])
     elif "forge" in loaders:
         loader_ver = str(loaders["forge"]).strip()
         targets = unique_preserve_order([
+            f"forge::{loader_ver}",
             f"forge:{mc_version}",
-            f"forge:{mc_version}:{loader_ver}",
-            f"forge:{loader_ver}",
+            f"forge:{mc_version}:unstable",
         ])
     elif "fabric" in loaders:
         loader_ver = str(loaders["fabric"]).strip()
         targets = unique_preserve_order([
             f"fabric:{mc_version}",
             f"fabric:{mc_version}:{loader_ver}",
-            "fabric",
         ])
     else:
         targets = [mc_version]

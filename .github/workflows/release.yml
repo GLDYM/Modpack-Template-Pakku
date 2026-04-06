@@ -17,8 +17,7 @@ jobs:
       - name: Resolve release metadata
         id: meta
         run: |
-          chmod +x ./.github/scripts/resolve-build-meta.sh
-          ./.github/scripts/resolve-build-meta.sh
+          python3 ./.github/scripts/resolve-build-meta.py pakku.json pakku-lock.json installer/install-config.properties >> "$GITHUB_OUTPUT"
 
       - name: Setup JDK
         uses: actions/setup-java@v5.2.0

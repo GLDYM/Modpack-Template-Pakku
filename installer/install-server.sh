@@ -52,12 +52,12 @@ function do_unzip() {
 }
 
 function resolve_config_path() {
-  if [[ -f "install-config.json" ]]; then
-    CONFIG_PATH="install-config.json"
-  elif [[ -f "installer/install-config.json" ]]; then
-    CONFIG_PATH="installer/install-config.json"
+  if [[ -f "install-config.properties" ]]; then
+    CONFIG_PATH="install-config.properties"
+  elif [[ -f "installer/install-config.properties" ]]; then
+    CONFIG_PATH="installer/install-config.properties"
   else
-    echo -e "${RED}install-config.json not found in current directory or installer/ directory.${RESET}"
+    echo -e "${RED}install-config.properties not found in current directory or installer/ directory.${RESET}"
     exit 1
   fi
 }
@@ -65,7 +65,8 @@ function resolve_config_path() {
 function read_config_value() {
   local key="$1"
   local value
-  value="$(tr -d '\r\n' < "$CONFIG_PATH" | sed -n "s/.*\"$key\"[[:space:]]*:[[:space:]]*\"\([^\"]*\)\".*/\1/p")"
+  value="$(sed -n "s/^[[:space:]]*$key[[:space:]]*=[[:space:]]*//p" "$CONFIG_PATH" | head -n 1 | tr -d '\r')"
+
   echo "$value"
 }
 
@@ -82,7 +83,7 @@ function load_config() {
   FABRIC_INSTALLER_URL_TEMPLATE="$(read_config_value "fabric_installer_url_template")"
 
   if [[ -z "$PAKKU_URL" || -z "$LOCKFILE_PATH" || -z "$SERVER_DIR" || -z "$SERVERPACK_DIR" || -z "$FORGE_INSTALLER_URL_TEMPLATE" || -z "$NEOFORGE_INSTALLER_URL_TEMPLATE" || -z "$FABRIC_INSTALLER_VERSION" || -z "$FABRIC_INSTALLER_URL_TEMPLATE" ]]; then
-    echo -e "${RED}install-config.json is missing required fields.${RESET}"
+    echo -e "${RED}${CONFIG_PATH} is missing required fields.${RESET}"
     exit 1
   fi
 }

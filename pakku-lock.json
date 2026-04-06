@@ -6,6 +6,48 @@
     "loaders": {
         "neoforge": "26.1.1.6-beta"
     },
-    "projects": [],
+    "projects": [
+        {
+            "pakku_id": "aIwqUkfMsD7269J4",
+            "type": "MOD",
+            "side": "BOTH",
+            "slug": {
+                "curseforge": "jei",
+                "modrinth": "jei"
+            },
+            "name": {
+                "curseforge": "Just Enough Items (JEI)",
+                "modrinth": "Just Enough Items (JEI)"
+            },
+            "id": {
+                "curseforge": "238222",
+                "modrinth": "u6dRKJwZ"
+            },
+            "files": [
+                {
+                    "type": "curseforge",
+                    "file_name": "jei-26.1.1-neoforge-29.3.0.22.jar",
+                    "mc_versions": [
+                        "26.1",
+                        "26.1.1"
+                    ],
+                    "loaders": [
+                        "neoforge"
+                    ],
+                    "release_type": "beta",
+                    "url": "https://edge.forgecdn.net/files/7861/613/jei-26.1.1-neoforge-29.3.0.22.jar",
+                    "id": "7861613",
+                    "parent_id": "238222",
+                    "hashes": {
+                        "sha1": "9da858d9fc9bd5bdaa1c357fe3e71e9ab5cc1f15",
+                        "md5": "602f651524584f34621a05300e4728cb"
+                    },
+                    "required_dependencies": [],
+                    "size": 1497203,
+                    "date_published": "2026-04-02T13:03:37.707Z"
+                }
+            ]
+        }
+    ],
     "lockfile_version": 1
 }

@@ -45,37 +45,59 @@ function Do-Unzip($zip, $dest) {
 }
 
 function Resolve-ConfigPath {
-    if (Test-Path "install-config.json") {
-        return "install-config.json"
+    if (Test-Path "install-config.properties") {
+        return "install-config.properties"
     }
-    if (Test-Path "installer/install-config.json") {
-        return "installer/install-config.json"
+    if (Test-Path "installer/install-config.properties") {
+        return "installer/install-config.properties"
     }
 
-    Write-Color "install-config.json not found in current directory or installer/ directory." Red
+    Write-Color "install-config.properties not found in current directory or installer/ directory." Red
     exit 1
+}
+
+function Get-PropertiesFromFile($Path) {
+    $map = @{}
+    $lines = Get-Content $Path
+    foreach ($line in $lines) {
+        $trimmed = $line.Trim()
+        if (-not $trimmed -or $trimmed.StartsWith("#") -or $trimmed.StartsWith(";")) {
+            continue
+        }
+
+        $idx = $trimmed.IndexOf("=")
+        if ($idx -lt 1) {
+            continue
+        }
+
+        $key = $trimmed.Substring(0, $idx).Trim()
+        $value = $trimmed.Substring($idx + 1).Trim()
+        $map[$key] = $value
+    }
+    return $map
 }
 
 function Load-Config {
     $script:CONFIG_PATH = Resolve-ConfigPath
+
     try {
-        $config = Get-Content $script:CONFIG_PATH -Raw | ConvertFrom-Json
+        $config = Get-PropertiesFromFile $script:CONFIG_PATH
     } catch {
-        Write-Color "Failed to parse install-config.json: $($_.Exception.Message)" Red
+        Write-Color "Failed to parse $($script:CONFIG_PATH): $($_.Exception.Message)" Red
         exit 1
     }
 
-    $script:PAKKU_URL = [string]$config.pakku_url
-    $script:LOCKFILE_PATH = [string]$config.lockfile_path
-    $script:SERVER_DIR = [string]$config.server_dir
-    $script:SERVERPACK_DIR = [string]$config.serverpack_dir
-    $script:FORGE_INSTALLER_URL_TEMPLATE = [string]$config.forge_installer_url_template
-    $script:NEOFORGE_INSTALLER_URL_TEMPLATE = [string]$config.neoforge_installer_url_template
-    $script:FABRIC_INSTALLER_VERSION = [string]$config.fabric_installer_version
-    $script:FABRIC_INSTALLER_URL_TEMPLATE = [string]$config.fabric_installer_url_template
+    $script:PAKKU_URL = [string]$config["pakku_url"]
+    $script:LOCKFILE_PATH = [string]$config["lockfile_path"]
+    $script:SERVER_DIR = [string]$config["server_dir"]
+    $script:SERVERPACK_DIR = [string]$config["serverpack_dir"]
+    $script:FORGE_INSTALLER_URL_TEMPLATE = [string]$config["forge_installer_url_template"]
+    $script:NEOFORGE_INSTALLER_URL_TEMPLATE = [string]$config["neoforge_installer_url_template"]
+    $script:FABRIC_INSTALLER_VERSION = [string]$config["fabric_installer_version"]
+    $script:FABRIC_INSTALLER_URL_TEMPLATE = [string]$config["fabric_installer_url_template"]
 
     if (-not $script:PAKKU_URL -or -not $script:LOCKFILE_PATH -or -not $script:SERVER_DIR -or -not $script:SERVERPACK_DIR -or -not $script:FORGE_INSTALLER_URL_TEMPLATE -or -not $script:NEOFORGE_INSTALLER_URL_TEMPLATE -or -not $script:FABRIC_INSTALLER_VERSION -or -not $script:FABRIC_INSTALLER_URL_TEMPLATE) {
-        Write-Color "install-config.json is missing required fields." Red
+        Write-Color "$($script:CONFIG_PATH) is missing required fields." Red
         exit 1
     }
 }

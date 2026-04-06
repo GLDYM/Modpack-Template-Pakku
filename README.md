@@ -4,9 +4,10 @@ A Minecraft Modpack Template based on [Pakku](https://github.com/juraj-hrivnak/P
 
 ## Feature
 
-- Auto build client-pack & server-pack
-- Auto test server-pack
 - Auto validate json & toml files
+- Auto build client-pack & server-pack
+- Auto test client-pack & server-pack
+- Auto test the connection between client and server
 - Provide lightweight server-pack by distributing the source
 
 ## Usage

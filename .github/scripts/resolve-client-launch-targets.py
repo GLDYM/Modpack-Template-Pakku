@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+
+'''
+resolve-client-launch-targets.py
+Resolves the Minecraft version and loader targets based on the lockfile.
+'''
+
 import json
 import pathlib
 import sys

@@ -22,8 +22,8 @@ See [https://juraj-hrivnak.github.io/Pakku/home.html](https://juraj-hrivnak.gith
 
 - The github action will be triggered when changing the content of modpack, including `pakku.json`, `pakku-lock.json` or `.pakku/`.
 - The action will validate json & toml files in `.pakku/`, you can configure in `exclude.txt` to exclude some files.
-- Then build client-pack , server-pack & full server-pack, release them under `build` tag.
-- Finally start up server-pack to test.
+- Then build client-pack, server-pack & full server-pack, release them under `build` tag.
+- Finally start up client-pack & server-pack to test.
 
 #### Release & publish
 
@@ -38,3 +38,4 @@ MIT License
 ## Special Thanks
 
 - [Pakku](https://github.com/juraj-hrivnak/Pakku)
+- [PortableMC](https://github.com/theorzr/portablemc)

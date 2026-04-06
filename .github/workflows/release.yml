@@ -44,25 +44,24 @@ jobs:
           chmod +x ./.github/scripts/prepare-release.sh
           ./.github/scripts/prepare-release.sh "${{ steps.meta.outputs.release_tag }}"
 
-      - name: Publish Release
+      - name: Ensure Release Exists
         run: |
           TAG="${{ steps.meta.outputs.release_tag }}"
           TITLE="${{ steps.meta.outputs.pack_name }} ${{ steps.meta.outputs.pack_version }}"
 
-          if gh release view "$TAG" >/dev/null 2>&1; then
-            gh release edit "$TAG" --title "$TITLE"
-            gh release upload "$TAG" \
-              "${{ steps.meta.outputs.client_release_zip }}" \
-              "${{ steps.meta.outputs.server_release_zip }}" \
-              "${{ steps.meta.outputs.full_server_release_zip }}" \
-              --clobber
-          else
-            gh release create "$TAG" \
-              "${{ steps.meta.outputs.client_release_zip }}" \
-              "${{ steps.meta.outputs.server_release_zip }}" \
-              "${{ steps.meta.outputs.full_server_release_zip }}" \
-              --title "$TITLE" \
-              --generate-notes
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" --title "$TITLE" --generate-notes
           fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Release Assets
+        run: |
+          TAG="${{ steps.meta.outputs.release_tag }}"
+          gh release upload "$TAG" \
+            "${{ steps.meta.outputs.client_release_zip }}" \
+            "${{ steps.meta.outputs.server_release_zip }}" \
+            "${{ steps.meta.outputs.full_server_release_zip }}" \
+            --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

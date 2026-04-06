@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+
+# prepare-client-mods.sh
+# Prepare client by merging overrides and downloading mods 
+# specified in pakku-lock.json.
+# If Portable MC adds their support of Curseforge modpack format,
+# this file is no longer needed.
+
 set -euo pipefail
 
 LOCKFILE_PATH="${1:-pakku-lock.json}"

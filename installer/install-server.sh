@@ -18,10 +18,10 @@ LOADER_INSTALLER_URL=""
 INSTALLER_FILE_GLOB=""
 INSTALLER_TARGET_FILE=""
 
-# === Color Prompts ===
+# ==== Color Prompts ====
 YELLOW="\033[33m"; GREEN="\033[32m"; RED="\033[31m"; RESET="\033[0m"
 
-# === Utility Functions ===
+# ==== Utility Functions ====
 function have_cmd() { command -v "$1" >/dev/null 2>&1; }
 
 function downloader() {
@@ -51,6 +51,7 @@ function do_unzip() {
   fi
 }
 
+# ==== Configuration Loading ====
 function resolve_config_path() {
   if [[ -f "install-config.properties" ]]; then
     CONFIG_PATH="install-config.properties"
@@ -88,6 +89,7 @@ function load_config() {
   fi
 }
 
+# ==== Resolve Loader Info from Lockfile ====
 function resolve_loader_from_lockfile() {
   if [[ ! -f "$LOCKFILE_PATH" ]]; then
     echo -e "${RED}pakku-lock.json not found at ${LOCKFILE_PATH}.${RESET}"
@@ -135,7 +137,7 @@ function resolve_loader_from_lockfile() {
   echo -e "${GREEN}Detected loader: ${LOADER_NAME} ${LOADER_VERSION} (MC ${MC_VERSION})${RESET}"
 }
 
-# === Check Java ===
+# ==== Check Java ====
 function check_java() {
   if ! have_cmd java; then
     echo -e "${RED}Didn't detect Java, please install it first (recommended JDK 21 or above).${RESET}"
@@ -144,7 +146,7 @@ function check_java() {
   echo -e "${GREEN}Java detected: $(java -version 2>&1 | head -n 1)${RESET}"
 }
 
-# === Pakku Management ===
+# ==== Pakku Management ====
 function ensure_pakku() {
   if [[ -f "pakku.jar" ]]; then
     echo -e "${GREEN}pakku.jar already exists, skipping download.${RESET}"
@@ -155,7 +157,7 @@ function ensure_pakku() {
   fi
 }
 
-# === Build Serverpack ===
+# ==== Build Serverpack ====
 function build_serverpack() {
   ensure_unzip
   mkdir -p "$SERVER_DIR"
@@ -175,7 +177,7 @@ function build_serverpack() {
   echo -e "${GREEN}serverpack extraction completed.${RESET}"
 }
 
-# === Loader Installer Management ===
+# ==== Loader Installer Management ====
 function ensure_loader_installer() {
   mkdir -p "$SERVER_DIR"
   local local_installer
@@ -192,7 +194,7 @@ function ensure_loader_installer() {
   fi
 }
 
-# === Install Loader ===
+# ==== Install Loader ====
 function install_loader() {
   echo -e "${YELLOW}Installing ${LOADER_NAME} in ./${SERVER_DIR}...${RESET}"
   pushd "$SERVER_DIR" >/dev/null
@@ -220,7 +222,7 @@ function install_loader() {
   popd >/dev/null
 }
 
-# === Main Process ===
+# ==== Main Process ====
 echo -e "${GREEN}==== Pakku Modpack Template Server Build Script ====${RESET}"
 load_config
 resolve_loader_from_lockfile

@@ -1,4 +1,12 @@
 #!/usr/bin/env python3
+
+'''
+resolve-build-meta.py
+Resolve build metadata such as 
+output file names, release tags, and Java version.
+Based on pakku.json, pakku-lock.json, and install-config.properties.
+'''
+
 import json
 import pathlib
 import re

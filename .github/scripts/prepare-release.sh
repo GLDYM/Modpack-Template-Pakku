@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+
+# prepare-release.sh
+# Check if release tag exists. 
+# If not, create a new tag and push to origin.
+
 set -euo pipefail
 
 RELEASE_TAG="${1:-}"

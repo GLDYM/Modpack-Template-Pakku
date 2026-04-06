@@ -1,4 +1,12 @@
 #!/usr/bin/env python3
+
+'''
+resolve-client-mod-downloads.py
+Resolve client mods download URLs based on the lockfile.
+If Portable MC adds their support of Curseforge modpack format,
+this file is no longer needed.
+'''
+
 import json
 import pathlib
 import sys

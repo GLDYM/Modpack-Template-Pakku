@@ -3,7 +3,7 @@
 
 $ErrorActionPreference = "Stop"
 
-# === Configuration ===
+# ==== Configuration ====
 $CONFIG_PATH = $null
 $PAKKU_URL = $null
 $LOCKFILE_PATH = $null
@@ -20,12 +20,12 @@ $LOADER_INSTALLER_URL = $null
 $INSTALLER_FILE_GLOB = $null
 $INSTALLER_TARGET_FILE = $null
 
-# === Color Prompts ===
+# ==== Color Prompts ====
 function Write-Color($Text, $Color="White") {
     Write-Host $Text -ForegroundColor $Color
 }
 
-# === Utility Functions ===
+# ==== Utility Functions ====
 function Downloader($url, $dest) {
     try {
         Invoke-WebRequest -Uri $url -OutFile $dest -UseBasicParsing
@@ -44,6 +44,7 @@ function Do-Unzip($zip, $dest) {
     }
 }
 
+# ==== Configuration Loading ====
 function Resolve-ConfigPath {
     if (Test-Path "install-config.properties") {
         return "install-config.properties"
@@ -102,6 +103,7 @@ function Load-Config {
     }
 }
 
+# ==== Resolve Loader Info from Lockfile ====
 function Resolve-LoaderFromLockfile {
     if (-not (Test-Path $LOCKFILE_PATH)) {
         Write-Color "pakku-lock.json not found at $LOCKFILE_PATH" Red
@@ -148,7 +150,7 @@ function Resolve-LoaderFromLockfile {
     Write-Color "Detected loader: $($script:LOADER_NAME) $($script:LOADER_VERSION) (MC $($script:MC_VERSION))" Green
 }
 
-# === Check Java ===
+# ==== Check Java ====
 function Check-Java {
     if (-not (Get-Command "java.exe" -ErrorAction SilentlyContinue)) {
         Write-Host "Didn't detect Java, please install it first (recommended JDK 21 or above)." -ForegroundColor Red
@@ -164,7 +166,7 @@ function Check-Java {
 }
 
 
-# === Pakku Management ===
+# ==== Pakku Management ====
 function Ensure-Pakku {
     if (Test-Path "pakku.jar") {
         Write-Color "pakku.jar already exists, skipping download." Green
@@ -175,7 +177,7 @@ function Ensure-Pakku {
     }
 }
 
-# === Build Serverpack ===
+# ==== Build Serverpack ====
 function Build-Serverpack {
     New-Item -ItemType Directory -Force -Path $SERVER_DIR | Out-Null
 
@@ -200,7 +202,7 @@ function Build-Serverpack {
     }
 }
 
-# === Loader Installer Management ===
+# ==== Loader Installer Management ====
 function Ensure-LoaderInstaller {
     New-Item -ItemType Directory -Force -Path $SERVER_DIR | Out-Null
     $localInstaller = Get-ChildItem -Filter $INSTALLER_FILE_GLOB -ErrorAction SilentlyContinue | Select-Object -First 1
@@ -215,7 +217,7 @@ function Ensure-LoaderInstaller {
     }
 }
 
-# === Install Loader ===
+# ==== Install Loader ====
 function Install-Loader {
     Write-Color "Installing $LOADER_NAME in ./$SERVER_DIR..." Yellow
     Push-Location $SERVER_DIR
@@ -242,7 +244,7 @@ function Install-Loader {
     Pop-Location
 }
 
-# === Main Process ===
+# ==== Main Process ====
 Write-Color "==== Pakku Modpack Template Server Build Script ====" Green
 Load-Config
 Resolve-LoaderFromLockfile

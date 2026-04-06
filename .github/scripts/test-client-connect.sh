@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
+shopt -s dotglob
 
+# ===== Module: Runtime Configuration =====
 SERVER_DIR="${SERVER_DIR:-server}"
 CLIENT_DIR="${CLIENT_DIR:-client}"
 LOCKFILE_PATH="${LOCKFILE_PATH:-pakku-lock.json}"
@@ -8,6 +10,7 @@ USERNAME="${CLIENT_USERNAME:-Dev}"
 SERVER_HOST="${SERVER_HOST:-localhost}"
 SERVER_PORT="${SERVER_PORT:-25565}"
 
+# ===== Module: Preflight Checks =====
 if [[ ! -d "$SERVER_DIR" ]]; then
   echo "Server directory not found: $SERVER_DIR"
   exit 1
@@ -28,6 +31,51 @@ if [[ -z "${DISPLAY:-}" ]]; then
   exit 1
 fi
 
+# ===== Module: Diagnostics Helpers =====
+print_server_diagnostics() {
+  echo "===== Server Diagnostics ====="
+
+  if [[ -f "$SERVER_DIR/server.log" ]]; then
+    echo "===== server.log ====="
+    cat "$SERVER_DIR/server.log" || true
+  fi
+
+#   if [[ -f "$SERVER_DIR/logs/latest.log" ]]; then
+#     echo "===== logs/latest.log ====="
+#     cat "$SERVER_DIR/logs/latest.log" || true
+#   fi
+
+  if [[ -f "$SERVER_DIR/logs/kubejs/startup.log" ]]; then
+    echo "===== logs/kubejs/startup.log ====="
+    cat "$SERVER_DIR/logs/kubejs/startup.log" || true
+  fi
+
+  if ls "$SERVER_DIR"/crash-reports/*.txt >/dev/null 2>&1; then
+    echo "===== crash-reports ====="
+    cat "$SERVER_DIR"/crash-reports/*.txt || true
+  fi
+}
+
+print_client_diagnostics() {
+  echo "===== Client Diagnostics ====="
+
+  if [[ -f "$CLIENT_DIR/client.log" ]]; then
+    echo "===== client.log ====="
+    cat "$CLIENT_DIR/client.log" || true
+  fi
+
+#   if [[ -f "$CLIENT_DIR/.minecraft/logs/latest.log" ]]; then
+#     echo "===== .minecraft/logs/latest.log ====="
+#     cat "$CLIENT_DIR/.minecraft/logs/latest.log" || true
+#   fi
+
+  if ls "$CLIENT_DIR"/.minecraft/crash-reports/*.txt >/dev/null 2>&1; then
+    echo "===== .minecraft/crash-reports ====="
+    cat "$CLIENT_DIR"/.minecraft/crash-reports/*.txt || true
+  fi
+}
+
+# ===== Module: Client Profile Bootstrap =====
 mkdir -p "$CLIENT_DIR/.minecraft"
 cat > "$CLIENT_DIR/.minecraft/options.txt" <<EOF
 skipMultiplayerWarning:true
@@ -36,6 +84,7 @@ joinedFirstServer:true
 tutorialStep:none
 EOF
 
+# ===== Module: Launch Target Resolution =====
 launch_info_file="$(mktemp)"
 python3 ./.github/scripts/resolve-client-launch-targets.py "$LOCKFILE_PATH" "$launch_info_file"
 readarray -t launch_info < "$launch_info_file"
@@ -52,6 +101,7 @@ TARGETS=("${launch_info[@]:1}")
 echo "Resolved MC version: $MC_VERSION"
 echo "Trying launch targets: ${TARGETS[*]}"
 
+# Probe candidate targets with dry-run to pick a compatible entry for current portablemc.
 selected_target=""
 for target in "${TARGETS[@]}"; do
   echo "Checking launch target: $target"
@@ -74,6 +124,7 @@ fi
 
 echo "Selected launch target: $selected_target"
 
+# ===== Module: Server Runtime Preparation =====
 if [[ -f "$SERVER_DIR/server.properties" ]]; then
   if grep -q '^online-mode=' "$SERVER_DIR/server.properties"; then
     sed -i 's/^online-mode=.*/online-mode=false/' "$SERVER_DIR/server.properties"
@@ -84,6 +135,7 @@ else
   echo 'online-mode=false' > "$SERVER_DIR/server.properties"
 fi
 
+# ===== Module: Server Launch =====
 pushd "$SERVER_DIR" >/dev/null
 chmod +x run.sh
 
@@ -92,6 +144,7 @@ SERVER_PID=$!
 
 echo "Started server with PID $SERVER_PID"
 
+# ===== Module: Process Cleanup =====
 cleanup() {
   if kill -0 "$SERVER_PID" 2>/dev/null; then
     kill "$SERVER_PID" 2>/dev/null || true
@@ -102,42 +155,65 @@ cleanup() {
 }
 trap cleanup EXIT
 
-if ! timeout 8m grep -q 'Done ([0-9.]\+s)! For help, type "help"' <(tail -f server.log); then
+# ===== Module: Server Startup Verification =====
+# If a server doesn't start within 5 minutes, we assumed it failed to start and exit with error.
+# For Github Actions' powerful machines, over 5 minutes is not acceptable.
+if ! timeout 5m grep -q 'Done ([0-9.]\+s)! For help, type "help"' <(tail -f server.log); then
   echo "Server did not start successfully"
-  cat server.log || true
+  popd >/dev/null
+  print_server_diagnostics
   exit 1
 fi
 
 echo "Server started, launching client"
 popd >/dev/null
 
+# ===== Module: Client Launch =====
 portablemc \
   --main-dir "$CLIENT_DIR/.minecraft" \
   start "$selected_target" \
   -u "$USERNAME" \
   --join-server "$SERVER_HOST" \
   --join-server-port "$SERVER_PORT" > "$CLIENT_DIR/client.log" 2>&1 &
+
 CLIENT_PID=$!
 
 echo "Started client with PID $CLIENT_PID"
 
+# ===== Module: Client Join Verification =====
 if ! timeout 6m grep -q "$USERNAME joined the game" <(tail -f "$SERVER_DIR/server.log"); then
-  echo "Client did not join server in time"
-  echo "===== Server Log ====="
-  cat "$SERVER_DIR/server.log" || true
-  echo "===== Client Log ====="
-  cat "$CLIENT_DIR/client.log" || true
+  echo "===== Client did not join server in time ====="
+  print_server_diagnostics
+  print_client_diagnostics
   exit 1
 fi
 
-echo "Client joined server successfully"
-sleep 20
+echo "===== Client joined server successfully ====="
 
-if ! kill -0 "$CLIENT_PID" 2>/dev/null; then
-  echo "Client crashed after joining"
-  echo "===== Client Log ====="
-  cat "$CLIENT_DIR/client.log" || true
-  exit 1
-fi
+# ===== Module: Stability Monitoring =====
+for i in {1..30}; do
+  sleep 10
 
-echo "Client connection test passed"
+  if ! kill -0 "$SERVER_PID" 2>/dev/null; then
+    echo "===== Server crashed after client joined ====="
+    print_server_diagnostics
+    print_client_diagnostics
+    exit 1
+  fi
+
+  if ! kill -0 "$CLIENT_PID" 2>/dev/null; then
+    echo "===== Client crashed after joining ====="
+    print_server_diagnostics
+    print_client_diagnostics
+    exit 1
+  fi
+done
+
+# ===== Module: Success Summary =====
+echo "===== Client connection test passed ====="
+
+print_server_diagnostics
+print_client_diagnostics
+
+echo "===== Client connection test passed ====="
+exit 0

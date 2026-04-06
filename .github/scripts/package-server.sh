@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
+# package-server.sh
+# Build full server-pack zip and package zip for release.
+
+set -euo pipefail
+shopt -s dotglob
+
+# ==== Configuration ====
 SERVER_ZIP_NAME="${1:-}"
 FULL_SERVER_ZIP_NAME="${2:-}"
 
@@ -22,17 +28,21 @@ else
   exit 1
 fi
 
+# ==== Build Full Server-pack ====
 chmod +x installer/install-server.sh
 ./installer/install-server.sh
 
+# Package full server zip
 zip -r "./${FULL_SERVER_ZIP_NAME}" ./server/*
 
+# ==== Build Lightweight Server-pack ====
 cp pakku.json installer/
 cp pakku-lock.json installer/
 cp pakku.jar installer/
 cp -r .pakku/ installer/
 rm -rf installer/.pakku/client-overrides/*
 
+# Resolve loader installer
 loader_name=""
 loader_version=""
 installer_file_name=""
@@ -59,7 +69,5 @@ if [[ -n "$installer_url" ]]; then
   cp "$installer_file_name" installer/
 fi
 
-
-shopt -s dotglob
+# Package server zip
 zip -r "./${SERVER_ZIP_NAME}" ./installer
-shopt -u dotglob

@@ -1,4 +1,12 @@
 #!/usr/bin/env python3
+
+'''
+resolve-loader-installer-meta.py
+Resolve Mod Loader Installer URL for lightweight server-pack.
+Full server-pack resolve this in the install script.
+'''
+
+
 import json
 import pathlib
 import sys

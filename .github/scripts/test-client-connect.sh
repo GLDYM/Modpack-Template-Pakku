@@ -56,7 +56,7 @@ selected_target=""
 for target in "${TARGETS[@]}"; do
   echo "Checking launch target: $target"
   dry_log_file="$(mktemp)"
-  if portablemc --main-dir "$CLIENT_DIR/.minecraft" --work-dir "$CLIENT_DIR/profile" start "$target" -u "$USERNAME" --dry > /dev/null 2> "$dry_log_file"; then
+  if portablemc --main-dir "$CLIENT_DIR/.minecraft" start "$target" --work-dir "$CLIENT_DIR/profile" -u "$USERNAME" --dry > /dev/null 2> "$dry_log_file"; then
     selected_target="$target"
     rm -f "$dry_log_file"
     break
@@ -113,8 +113,8 @@ popd >/dev/null
 
 portablemc \
   --main-dir "$CLIENT_DIR/.minecraft" \
-  --work-dir "$CLIENT_DIR/profile" \
   start "$selected_target" \
+  --work-dir "$CLIENT_DIR/profile" \
   -u "$USERNAME" \
   -s "$SERVER_HOST" \
   -p "$SERVER_PORT" > "$CLIENT_DIR/client.log" 2>&1 &

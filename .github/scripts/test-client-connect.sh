@@ -54,9 +54,16 @@ echo "Trying launch targets: ${TARGETS[*]}"
 
 selected_target=""
 for target in "${TARGETS[@]}"; do
-  if portablemc --main-dir "$CLIENT_DIR/.minecraft" --work-dir "$CLIENT_DIR/profile" start "$target" -u "$USERNAME" --dry >/dev/null 2>&1; then
+  echo "Checking launch target: $target"
+  dry_log_file="$(mktemp)"
+  if portablemc --main-dir "$CLIENT_DIR/.minecraft" --work-dir "$CLIENT_DIR/profile" start "$target" -u "$USERNAME" --dry > /dev/null 2> "$dry_log_file"; then
     selected_target="$target"
+    rm -f "$dry_log_file"
     break
+  else
+    echo "Target failed: $target"
+    sed -n '1,8p' "$dry_log_file" || true
+    rm -f "$dry_log_file"
   fi
 done
 

@@ -123,7 +123,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends xvfb libxtst6 libxi6
 
-          PORTABLEMC_VERSION="5.0.2"
+          PORTABLEMC_VERSION="5.0.3"
           PORTABLEMC_URL="https://github.com/theorzr/portablemc/releases/download/v${PORTABLEMC_VERSION}/portablemc-${PORTABLEMC_VERSION}-linux-x86_64-gnu.tar.gz"
 
           mkdir -p "$HOME/.local/bin" /tmp/portablemc

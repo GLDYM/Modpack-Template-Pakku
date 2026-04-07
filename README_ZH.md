@@ -2,7 +2,7 @@
 
 # Modpack Template - Pakku
 
-基于 [Pakku](https://github.com/juraj-hrivnak/Pakku) 的整合包模板, 提供整合包自动测试与交付。
+基于 [Pakku](https://github.com/juraj-hrivnak/Pakku) 的整合包模板, 提供整合包自动构建、测试与发布。
 
 [English](README.md) / [简体中文](README_ZH.md)
 

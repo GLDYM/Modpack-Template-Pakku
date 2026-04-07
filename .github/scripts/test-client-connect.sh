@@ -189,6 +189,7 @@ if ! timeout 6m grep -q "$USERNAME joined the game" <(tail -f "$SERVER_DIR/serve
 fi
 
 echo "===== Client joined server successfully ====="
+echo "Waiting for 5 minutes to monitor stability after client join..."
 
 # ===== Module: Stability Monitoring =====
 for i in {1..30}; do

@@ -85,7 +85,7 @@ def main() -> int:
         if project_type != "MOD":
             continue
 
-        side = str(project.get("side", "")).upper()
+        side = str(project.get("side", "BOTH")).upper()
         project_slug = _get_project_slug(project)
         if project_slug and project_slug in side_overrides:
             side = side_overrides[project_slug]

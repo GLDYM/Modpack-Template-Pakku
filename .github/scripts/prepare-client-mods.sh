@@ -9,8 +9,9 @@
 set -euo pipefail
 
 LOCKFILE_PATH="${1:-pakku-lock.json}"
-CLIENT_DIR="${2:-client}"
-PAKKU_DIR="${3:-.pakku}"
+PAKKU_JSON_PATH="${2:-pakku.json}"
+CLIENT_DIR="${3:-client}"
+PAKKU_DIR="${4:-.pakku}"
 
 if [[ ! -f "$LOCKFILE_PATH" ]]; then
   echo "Lockfile not found: $LOCKFILE_PATH"
@@ -19,6 +20,11 @@ fi
 
 if [[ ! -d "$PAKKU_DIR" ]]; then
   echo "Pakku directory not found: $PAKKU_DIR"
+  exit 1
+fi
+
+if [[ ! -f "$PAKKU_JSON_PATH" ]]; then
+  echo "Pakku config not found: $PAKKU_JSON_PATH"
   exit 1
 fi
 
@@ -49,7 +55,7 @@ fi
 
 tmp_list="$(mktemp)"
 
-python3 ./.github/scripts/resolve-client-mod-downloads.py "$LOCKFILE_PATH" "$tmp_list"
+python3 ./.github/scripts/resolve-client-mod-downloads.py "$LOCKFILE_PATH" "$tmp_list" "$PAKKU_JSON_PATH"
 
 download_count=0
 while IFS=$'\t' read -r url file_name sha1; do

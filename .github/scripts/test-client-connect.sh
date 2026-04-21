@@ -183,14 +183,7 @@ portablemc_cmd=(
 if [[ -n "$CLIENT_JVM" ]]; then
   portablemc_cmd+=(--jvm "$CLIENT_JVM")
 elif [[ -f "$CLIENT_JVM_ARGS_FILE" ]]; then
-  # Reuse server JVM arguments for the client launch when a custom JVM binary is not provided.
-  while IFS= read -r jvm_arg; do
-    jvm_arg="${jvm_arg%%#*}"
-    jvm_arg="${jvm_arg%$'\r'}"
-    if [[ -n "$jvm_arg" ]]; then
-      portablemc_cmd+=(--jvm-arg "$jvm_arg")
-    fi
-  done < "$CLIENT_JVM_ARGS_FILE"
+  portablemc_cmd+=(--jvm-arg "$CLIENT_JVM_ARGS_FILE")
 fi
 
 "${portablemc_cmd[@]}" > "$CLIENT_DIR/client.log" 2>&1 &

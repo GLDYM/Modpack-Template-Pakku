@@ -5,7 +5,8 @@ shopt -s dotglob
 # ===== Module: Runtime Configuration =====
 SERVER_DIR="${SERVER_DIR:-server}"
 CLIENT_DIR="${CLIENT_DIR:-client}"
-CLIENT_JVM="${CLIENT_JVM:-server/user_jvm_args.txt}"
+CLIENT_JVM="${CLIENT_JVM:-}"
+CLIENT_JVM_ARGS_FILE="${CLIENT_JVM_ARGS_FILE:-server/user_jvm_args.txt}"
 LOCKFILE_PATH="${LOCKFILE_PATH:-pakku-lock.json}"
 USERNAME="${CLIENT_USERNAME:-Dev}"
 SERVER_HOST="${SERVER_HOST:-localhost}"
@@ -170,14 +171,29 @@ echo "Server started, launching client"
 popd >/dev/null
 
 # ===== Module: Client Launch =====
-chmod 777 portablemc
-portablemc \
-  --main-dir "$CLIENT_DIR/.minecraft" \
-  start "$selected_target" \
-  -u "$USERNAME" \
-  --jvm "$CLIENT_JVM" \
-  --join-server "$SERVER_HOST" \
-  --join-server-port "$SERVER_PORT" > "$CLIENT_DIR/client.log" 2>&1 &
+portablemc_cmd=(
+  portablemc
+  --main-dir "$CLIENT_DIR/.minecraft"
+  start "$selected_target"
+  -u "$USERNAME"
+  --join-server "$SERVER_HOST"
+  --join-server-port "$SERVER_PORT"
+)
+
+if [[ -n "$CLIENT_JVM" ]]; then
+  portablemc_cmd+=(--jvm "$CLIENT_JVM")
+elif [[ -f "$CLIENT_JVM_ARGS_FILE" ]]; then
+  # Reuse server JVM arguments for the client launch when a custom JVM binary is not provided.
+  while IFS= read -r jvm_arg; do
+    jvm_arg="${jvm_arg%%#*}"
+    jvm_arg="${jvm_arg%$'\r'}"
+    if [[ -n "$jvm_arg" ]]; then
+      portablemc_cmd+=(--jvm-arg "$jvm_arg")
+    fi
+  done < "$CLIENT_JVM_ARGS_FILE"
+fi
+
+"${portablemc_cmd[@]}" > "$CLIENT_DIR/client.log" 2>&1 &
 
 CLIENT_PID=$!
 

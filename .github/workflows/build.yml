@@ -150,7 +150,7 @@ jobs:
       - name: Prepare client files and mods
         run: |
           chmod +x ./.github/scripts/prepare-client-mods.sh
-          ./.github/scripts/prepare-client-mods.sh "pakku-lock.json" "client" ".pakku"
+          ./.github/scripts/prepare-client-mods.sh "pakku-lock.json" "pakku.json" "client" ".pakku"
 
       - name: Run Minecraft client and validate server connection
         run: |

@@ -55,7 +55,7 @@ fi
 
 tmp_list="$(mktemp)"
 
-python3 ./.github/scripts/resolve-client-mod-downloads.py "$LOCKFILE_PATH" "$tmp_list" "$PAKKU_JSON_PATH"
+python3 ./.github/scripts/resolve-client-mod-downloads.py "$LOCKFILE_PATH" "$PAKKU_JSON_PATH" "$tmp_list"
 
 download_count=0
 while IFS=$'\t' read -r url file_name sha1; do

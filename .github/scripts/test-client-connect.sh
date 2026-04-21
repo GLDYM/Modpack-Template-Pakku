@@ -173,6 +173,7 @@ portablemc \
   --main-dir "$CLIENT_DIR/.minecraft" \
   start "$selected_target" \
   -u "$USERNAME" \
+  --jvm "-Xmx8G -Xms8G" \
   --join-server "$SERVER_HOST" \
   --join-server-port "$SERVER_PORT" > "$CLIENT_DIR/client.log" 2>&1 &
 

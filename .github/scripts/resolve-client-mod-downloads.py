@@ -12,6 +12,49 @@ import pathlib
 import sys
 
 
+def _read_side_overrides(lock_path: pathlib.Path) -> dict[str, str]:
+    """Read side overrides from pakku.json (projects.<slug>.side)."""
+    pakku_path = lock_path.with_name("pakku.json")
+    if not pakku_path.is_file():
+        return {}
+
+    try:
+        pakku = json.loads(pakku_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+
+    projects = pakku.get("projects")
+    if not isinstance(projects, dict):
+        return {}
+
+    overrides: dict[str, str] = {}
+    for slug, config in projects.items():
+        if not isinstance(slug, str) or not isinstance(config, dict):
+            continue
+        side = config.get("side")
+        if isinstance(side, str) and side:
+            overrides[slug] = side.upper()
+
+    return overrides
+
+
+def _get_project_slug(project: dict) -> str | None:
+    slug = project.get("slug")
+    if not isinstance(slug, dict):
+        return None
+
+    # Prefer modrinth slug first to match current pack configuration habits.
+    preferred = slug.get("modrinth")
+    if isinstance(preferred, str) and preferred:
+        return preferred
+
+    for value in slug.values():
+        if isinstance(value, str) and value:
+            return value
+
+    return None
+
+
 def main() -> int:
     if len(sys.argv) != 3:
         print("Usage: resolve-client-mod-downloads.py <lockfile-path> <output-list-path>")
@@ -26,6 +69,7 @@ def main() -> int:
 
     lock = json.loads(lock_path.read_text(encoding="utf-8"))
     projects = lock.get("projects", [])
+    side_overrides = _read_side_overrides(lock_path)
 
     side_allowed = {"BOTH", "CLIENT"}
     priority = {"curseforge": 0, "modrinth": 1}
@@ -38,6 +82,9 @@ def main() -> int:
             continue
 
         side = str(project.get("side", "")).upper()
+        project_slug = _get_project_slug(project)
+        if project_slug and project_slug in side_overrides:
+            side = side_overrides[project_slug]
         if side not in side_allowed:
             continue
 

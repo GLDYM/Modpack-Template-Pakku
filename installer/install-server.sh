@@ -163,18 +163,19 @@ function build_serverpack() {
   mkdir -p "$SERVER_DIR"
 
   shopt -s nullglob
-  local zips=("$SERVERPACK_DIR"/*.zip)
-  shopt -u nullglob
 
   echo -e "${YELLOW}Using pakku.jar to build serverpack...${RESET}"
   java -jar pakku.jar export
 
+  local zips=("$SERVERPACK_DIR"/*.zip)
   echo -e "${YELLOW}Extracting serverpack to ./${SERVER_DIR}${RESET}"
+  sleep 30
   for zipfile in "${zips[@]}"; do
     echo -e "${YELLOW}Extracting $zipfile ...${RESET}"
     do_unzip "$zipfile" "$SERVER_DIR"
   done
   echo -e "${GREEN}serverpack extraction completed.${RESET}"
+  shopt -u nullglob
 }
 
 # ==== Loader Installer Management ====

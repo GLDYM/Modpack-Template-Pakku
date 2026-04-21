@@ -12,9 +12,8 @@ import pathlib
 import sys
 
 
-def _read_side_overrides(lock_path: pathlib.Path) -> dict[str, str]:
+def _read_side_overrides(pakku_path: pathlib.Path) -> dict[str, str]:
     """Read side overrides from pakku.json (projects.<slug>.side)."""
-    pakku_path = lock_path.with_name("pakku.json")
     if not pakku_path.is_file():
         return {}
 
@@ -56,20 +55,25 @@ def _get_project_slug(project: dict) -> str | None:
 
 
 def main() -> int:
-    if len(sys.argv) != 3:
-        print("Usage: resolve-client-mod-downloads.py <lockfile-path> <output-list-path>")
+    if len(sys.argv) != 4:
+        print("Usage: resolve-client-mod-downloads.py <lockfile-path> <pakku-json-path> <output-list-path>")
         return 1
 
     lock_path = pathlib.Path(sys.argv[1])
-    out_path = pathlib.Path(sys.argv[2])
+    pakku_path = pathlib.Path(sys.argv[2])
+    out_path = pathlib.Path(sys.argv[3])
 
     if not lock_path.is_file():
         print(f"Lockfile not found: {lock_path}")
         return 1
 
+    if not pakku_path.is_file():
+        print(f"Pakku config not found: {pakku_path}")
+        return 1
+
     lock = json.loads(lock_path.read_text(encoding="utf-8"))
     projects = lock.get("projects", [])
-    side_overrides = _read_side_overrides(lock_path)
+    side_overrides = _read_side_overrides(pakku_path)
 
     side_allowed = {"BOTH", "CLIENT"}
     priority = {"curseforge": 0, "modrinth": 1}

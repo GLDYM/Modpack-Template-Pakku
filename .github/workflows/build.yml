@@ -114,7 +114,7 @@ jobs:
           ./installer/install-server.sh
 
       - name: Setup client test dependencies
-        uses: actions/setup-python@v5.5.0
+        uses: actions/setup-python@v6.2.0
         with:
           python-version: '3.x'
 

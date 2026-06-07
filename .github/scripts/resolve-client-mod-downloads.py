@@ -10,6 +10,7 @@ this file is no longer needed.
 import json
 import pathlib
 import sys
+from urllib.parse import quote, urlsplit, urlunsplit
 
 
 def _read_side_overrides(pakku_path: pathlib.Path) -> dict[str, str]:
@@ -37,21 +38,30 @@ def _read_side_overrides(pakku_path: pathlib.Path) -> dict[str, str]:
     return overrides
 
 
-def _get_project_slug(project: dict) -> str | None:
+def _get_project_slugs(project: dict) -> list[str]:
     slug = project.get("slug")
     if not isinstance(slug, dict):
-        return None
+        return []
 
-    # Prefer modrinth slug first to match current pack configuration habits.
-    preferred = slug.get("modrinth")
-    if isinstance(preferred, str) and preferred:
-        return preferred
-
+    slugs: list[str] = []
     for value in slug.values():
         if isinstance(value, str) and value:
-            return value
+            slugs.append(value)
+    return slugs
 
-    return None
+
+def _normalize_url(url: str) -> str:
+    """Percent-encode unsafe characters in URL components for curl/wget."""
+    parts = urlsplit(url)
+    return urlunsplit(
+        (
+            parts.scheme,
+            parts.netloc,
+            quote(parts.path, safe="/%:@!$&'()*+,;=-._~"),
+            quote(parts.query, safe="=&%:@!$'()*+,;/-._~?"),
+            quote(parts.fragment, safe="%:@!$&'()*+,;=/-._~?"),
+        )
+    )
 
 
 def main() -> int:
@@ -76,6 +86,9 @@ def main() -> int:
     side_overrides = _read_side_overrides(pakku_path)
 
     side_allowed = {"BOTH", "CLIENT"}
+    # Match the server pack built by `pakku export`, which is consumed from
+    # CurseForge in CI/release flows. Falling back to Modrinth is still useful
+    # for mods that do not have a CurseForge file in the lockfile.
     priority = {"curseforge": 0, "modrinth": 1}
 
     lines: list[str] = []
@@ -86,9 +99,10 @@ def main() -> int:
             continue
 
         side = str(project.get("side", "BOTH")).upper()
-        project_slug = _get_project_slug(project)
-        if project_slug and project_slug in side_overrides:
-            side = side_overrides[project_slug]
+        for project_slug in _get_project_slugs(project):
+            if project_slug in side_overrides:
+                side = side_overrides[project_slug]
+                break
         if side not in side_allowed:
             continue
 
@@ -101,6 +115,8 @@ def main() -> int:
         chosen = candidates[0]
 
         url = chosen.get("url")
+        if url:
+            url = _normalize_url(str(url))
         file_name = chosen.get("file_name")
         if not file_name:
             file_name = str(url).rstrip("/").split("/")[-1]
@@ -111,6 +127,10 @@ def main() -> int:
             sha1 = str(hashes.get("sha1", ""))
 
         lines.append("\t".join([str(url), str(file_name), sha1]))
+
+        source_type = str(chosen.get("type", "")).lower()
+        if source_type != "curseforge":
+            print(f"Falling back to {source_type or 'unknown'} for {file_name}", file=sys.stderr)
 
     out_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
     print(f"Resolved {len(lines)} client mod downloads")

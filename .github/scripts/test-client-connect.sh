@@ -35,15 +35,15 @@ fi
 print_server_diagnostics() {
   echo "===== Server Diagnostics ====="
 
-  if [[ -f "$SERVER_DIR/server.log" ]]; then
-    echo "===== server.log ====="
-    cat "$SERVER_DIR/server.log" || true
-  fi
-
-#   if [[ -f "$SERVER_DIR/logs/latest.log" ]]; then
-#     echo "===== logs/latest.log ====="
-#     cat "$SERVER_DIR/logs/latest.log" || true
+#   if [[ -f "$SERVER_DIR/server.log" ]]; then
+#     echo "===== server.log ====="
+#     cat "$SERVER_DIR/server.log" || true
 #   fi
+
+  if [[ -f "$SERVER_DIR/logs/debug.log" ]]; then
+    echo "===== logs/debug.log ====="
+    cat "$SERVER_DIR/logs/debug.log" || true
+  fi
 
   if [[ -f "$SERVER_DIR/logs/kubejs/startup.log" ]]; then
     echo "===== logs/kubejs/startup.log ====="
@@ -59,20 +59,50 @@ print_server_diagnostics() {
 print_client_diagnostics() {
   echo "===== Client Diagnostics ====="
 
-  if [[ -f "$CLIENT_DIR/client.log" ]]; then
-    echo "===== client.log ====="
-    cat "$CLIENT_DIR/client.log" || true
-  fi
-
-#   if [[ -f "$CLIENT_DIR/.minecraft/logs/latest.log" ]]; then
-#     echo "===== .minecraft/logs/latest.log ====="
-#     cat "$CLIENT_DIR/.minecraft/logs/latest.log" || true
+#   if [[ -f "$CLIENT_DIR/client.log" ]]; then
+#     echo "===== client.log ====="
+#     cat "$CLIENT_DIR/client.log" || true
 #   fi
+
+  if [[ -f "$CLIENT_DIR/.minecraft/logs/debug.log" ]]; then
+    echo "===== .minecraft/logs/debug.log ====="
+    cat "$CLIENT_DIR/.minecraft/logs/debug.log" || true
+  fi
 
   if ls "$CLIENT_DIR"/.minecraft/crash-reports/*.txt >/dev/null 2>&1; then
     echo "===== .minecraft/crash-reports ====="
     cat "$CLIENT_DIR"/.minecraft/crash-reports/*.txt || true
   fi
+}
+
+wait_for_log_with_process_check() {
+  local log_file="$1"
+  local log_pattern="$2"
+  local pid="$3"
+  local timeout_seconds="$4"
+  local process_name="$5"
+
+  local elapsed=0
+  while (( elapsed < timeout_seconds )); do
+    if [[ -f "$log_file" ]] && grep -q "$log_pattern" "$log_file"; then
+      return 0
+    fi
+
+    if ! kill -0 "$pid" 2>/dev/null; then
+      echo "$process_name exited before reaching the expected state"
+      return 1
+    fi
+
+    sleep 10
+    elapsed=$((elapsed + 10))
+  done
+
+  if [[ -f "$log_file" ]] && grep -q "$log_pattern" "$log_file"; then
+    return 0
+  fi
+
+  echo "Timed out waiting for $process_name to reach the expected state"
+  return 1
 }
 
 # ===== Module: Client Profile Bootstrap =====
@@ -158,7 +188,7 @@ trap cleanup EXIT
 # ===== Module: Server Startup Verification =====
 # If a server doesn't start within 5 minutes, we assumed it failed to start and exit with error.
 # For Github Actions' powerful machines, over 5 minutes is not acceptable.
-if ! timeout 5m grep -q 'Done ([0-9.]\+s)! For help, type "help"' <(tail -f server.log); then
+if ! wait_for_log_with_process_check "server.log" 'Done ([0-9.]\+s)! For help, type "help"' "$SERVER_PID" 300 "Server"; then
   echo "Server did not start successfully"
   popd >/dev/null
   print_server_diagnostics
@@ -186,7 +216,7 @@ CLIENT_PID=$!
 echo "Started client with PID $CLIENT_PID"
 
 # ===== Module: Client Join Verification =====
-if ! timeout 6m grep -q "$USERNAME joined the game" <(tail -f "$SERVER_DIR/server.log"); then
+if ! wait_for_log_with_process_check "$SERVER_DIR/server.log" "$USERNAME joined the game" "$CLIENT_PID" 360 "Client"; then
   echo "===== Client did not join server in time ====="
   print_server_diagnostics
   print_client_diagnostics

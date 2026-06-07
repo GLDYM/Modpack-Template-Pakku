@@ -152,6 +152,14 @@ jobs:
           chmod +x ./.github/scripts/prepare-client-mods.sh
           ./.github/scripts/prepare-client-mods.sh "pakku-lock.json" "pakku.json" "client" ".pakku"
 
+      - name: Compare installed server and client mods
+        run: |
+          python3 ./.github/scripts/compare-installed-mods.py \
+            "pakku-lock.json" \
+            "pakku.json" \
+            "server/mods" \
+            "client/.minecraft/mods"
+
       - name: Run Minecraft client and validate server connection
         run: |
           chmod +x ./.github/scripts/test-client-connect.sh
